@@ -4,4 +4,7 @@ export interface Book {
   author: string;
   genre: string;
   publicationYear: number;
+  pdfUrl?: string;
+  driveLink?: string;
+  coverImage?: string;
 }
