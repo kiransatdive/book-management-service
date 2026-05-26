@@ -11,29 +11,25 @@ interface UserProfile {
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user] = useState<UserProfile | null>(() => {
+    const isAuthenticated = localStorage.getItem('is_authenticated');
+    if (!isAuthenticated) return null;
+    
+    const savedUser = localStorage.getItem('mock_user');
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser);
+      } catch {
+        return { name: 'Guest User', email: 'guest@example.com' };
+      }
+    }
+    return { name: 'Guest User', email: 'guest@example.com' };
+  });
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('is_authenticated');
-    
     if (!isAuthenticated) {
       navigate('/login');
-      return;
-    }
-    
-    // Read the mocked user from localStorage
-    const savedUser = localStorage.getItem('mock_user');
-    
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        // Fallback to a default dummy user
-        setUser({ name: 'Guest User', email: 'guest@example.com' });
-      }
-    } else {
-      // Fallback to a default dummy user if they haven't registered
-      setUser({ name: 'Guest User', email: 'guest@example.com' });
     }
   }, [navigate]);
 
