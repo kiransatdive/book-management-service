@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { BooksService } from '../../../api/services/books.service';
 
-export const useBooks = (params?: { q?: string; genre?: string; _sort?: string; _order?: string }) => {
+export const useBooks = (params?: { q?: string; genre?: string; _sort?: string; _order?: string; _page?: number; _limit?: number }) => {
   return useQuery({
     queryKey: ['books', params],
     queryFn: () => BooksService.getBooks(params),

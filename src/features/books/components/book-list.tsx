@@ -14,15 +14,23 @@ export const BookList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [genreFilter, setGenreFilter] = useState('');
   const [bookToDelete, setBookToDelete] = useState<Book | null>(null);
+  const [page, setPage] = useState(1);
+  const limit = 8;
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
-  const { data: books, isLoading, error } = useBooks({
+  const { data, isLoading, error } = useBooks({
     q: debouncedSearch || undefined,
     genre: genreFilter || undefined,
     _sort: 'id',
     _order: 'desc',
+    _page: page,
+    _limit: limit,
   });
+
+  const books = data?.data;
+  const totalCount = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / limit);
 
   return (
     <div className="space-y-8 animate-fade-in-up">
@@ -41,9 +49,9 @@ export const BookList = () => {
 
       <BookSearch
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={(q) => { setSearchQuery(q); setPage(1); }}
         genreFilter={genreFilter}
-        onGenreChange={setGenreFilter}
+        onGenreChange={(g) => { setGenreFilter(g); setPage(1); }}
       />
 
       {isLoading ? (
@@ -71,6 +79,7 @@ export const BookList = () => {
               onClick={() => {
                 setSearchQuery('');
                 setGenreFilter('');
+                setPage(1);
               }}
             >
               Clear Filters
@@ -78,15 +87,41 @@ export const BookList = () => {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {books.map((book, index) => (
-            <div key={book.id} style={{ animationDelay: `${index * 50}ms` }} className="animate-fade-in-up">
-              <BookCard
-                book={book}
-                onDelete={setBookToDelete}
-              />
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {books.map((book, index) => (
+              <div key={book.id} style={{ animationDelay: `${index * 50}ms` }} className="animate-fade-in-up">
+                <BookCard
+                  book={book}
+                  onDelete={setBookToDelete}
+                />
+              </div>
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 pt-4 pb-8">
+              <Button 
+                variant="outline" 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="bg-white border-gray-200 hover:bg-gray-50"
+              >
+                Previous
+              </Button>
+              <span className="text-sm font-medium text-gray-600 bg-white/60 px-4 py-2 rounded-lg border border-white/60 backdrop-blur-sm shadow-sm">
+                Page {page} of {totalPages}
+              </span>
+              <Button 
+                variant="outline" 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="bg-white border-gray-200 hover:bg-gray-50"
+              >
+                Next
+              </Button>
             </div>
-          ))}
+          )}
         </div>
       )}
 
